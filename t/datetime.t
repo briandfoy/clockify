@@ -1,10 +1,13 @@
+use v5.32;
+use warnings;
+
 use Test::More;
+use Time::Piece;
 
 my $class = 'Clockify::DateTime';
 
-
 subtest setup => sub {
-	use_ok $class;
+	use_ok( $class ) or BAILOUT( "$class did not compile: $@" );
 	};
 
 subtest parse => sub {
@@ -23,11 +26,23 @@ subtest parse => sub {
 	};
 
 subtest format => sub {
-	my $datetime = '2021-03-23T13:07:19Z';
+	subtest parse => sub {
+		local $ENV{TZ};
+		my $datetime = '2021-03-23T13:07:19Z';
 
-	my $t = $class->parse( $datetime );
-	my $round_trip = $class->format( $t );
-	is( $round_trip, $datetime, 'Round trip date is the same' );
+		my $t = $class->parse( $datetime );
+		my $round_trip = $class->format( $t );
+		is( $round_trip, $datetime, 'Round trip date is the same' );
+		};
+
+	subtest parse_local => sub {
+		my $datetime = '2021-03-23T13:07:19Z';
+		local $ENV{TZ} = 'America/New_York';
+
+		my $t = $class->parse_local( $datetime );
+		is( $class->format_local( $t ), '2021-03-23T09:07:19 -0400' );
+		};
+
 	};
 
 done_testing();

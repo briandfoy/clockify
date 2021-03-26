@@ -7,6 +7,9 @@ use experimental qw(signatures);
 
 our $VERSION = '0.001_01';
 
+use warnings::register;
+
+use Carp qw(croak);
 use Time::Piece qw();
 
 =encoding utf8
@@ -21,7 +24,7 @@ Clockify::DateTime - handle dates
 
 	my $dt = Clockify::DateTime->parse( $string );
 
-	my $string = Clockify::DateTime->parse( $dt );
+	my $string = Clockify::DateTime->format( $dt );
 
 =head1 DESCRIPTION
 
@@ -29,11 +32,18 @@ Clockify::DateTime - handle dates
 
 =item CLASS->parse( STRING )
 
-Parse the datetime format used in the API responses and return a
-L<Time::Piece> object. A date looks like C<2021-03-23T13:00:00Z>.
+=item CLASS->parse_local( STRING [, TZ_VALUE ] )
 
+Parse the datetime format used in the API responses and return a
+L<Time::Piece> object. An input date looks like C<2021-03-23T13:00:00Z>.
 Note that you can use local times in requests, but the responses
 always return zulu time.
+
+With C<parse>, you get a time in UTC.
+
+With C<parse_local> and a valid time zone (such as C<America/New_York>),
+returns a local time. You can pass the time zone as the second argument
+or set it in the C<$ENV{TZ}> variable.
 
 =cut
 
@@ -42,7 +52,25 @@ sub parse ( $class, $datetime ) {
 	Time::Piece->strptime( $datetime =~ s/Z\z/ +0000/r, $format );
 	}
 
+sub parse_local ( $class, $datetime, $tz = $ENV{TZ} ) {
+	state $format = '%Y-%m-%dT%T %z';
+
+	local $ENV{TZ} = $tz;
+
+	if( ! defined $tz ) {
+		warnings::warnif( 'TZ is not set!' );
+		}
+	elsif( $tz =~ m|\A \w+ / \w+ \z| ) {
+		warnings::warnif( 'TZ is not in the form area/city!' );
+		}
+
+	my $t = Time::Piece->new->strptime( $datetime =~ s/Z\z/ +0000/r, $format );
+	$t += $t->tzoffset;
+	}
+
 =item CLASS->format( TIME_PIECE [, FORMAT] )
+
+=item CLASS->format_local( TIME_PIECE [, FORMAT] )
 
 Format the datetime format used in the API responses and return a
 L<Time::Piece> object.
@@ -50,6 +78,10 @@ L<Time::Piece> object.
 =cut
 
 sub format ( $class, $t, $format = '%Y-%m-%dT%TZ' ) {
+	$t->strftime( $format );
+	}
+
+sub format_local ( $class, $t, $format = '%Y-%m-%dT%T %z' ) {
 	$t->strftime( $format );
 	}
 
