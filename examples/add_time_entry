@@ -1,0 +1,155 @@
+#!perl
+use v5.32;
+use warnings;
+
+use lib qw(lib);
+use experimental qw(signatures);
+
+use Clockify;
+use Clockify::DateTime;
+
+=head1 NAME
+
+add_time_entry - create Clockify time entries
+
+=head1 SYNOPSIS
+
+	# Add an entry for today with start and end times, and message
+	% add_time_entry 1230 1730 "This is what I did"
+
+	# Add an entry for the 20th of this month, with start and end times, and message
+	% add_time_entry 20T1230 1730 "This is what I did"
+
+	# Add an entry for January 20, with start and end times, and message
+	% add_time_entry 1-20T1230 1730 "This is what I did"
+
+	# If the month is later than this month, it's last year
+	% add_time_entry 12-20T1230 1730 "This is what I did"
+
+=head1 DESCRIPTION
+
+=cut
+
+use Mojo::Util qw(dumper);
+
+run( @ARGV ) unless caller;
+
+sub run ( @args ) {
+	my( $start, $end, $description ) = @args;
+
+	my $user = Clockify->current_user;
+	say "User ID: ", $user->id;
+	say "Active Workspace ID: ", $user->active_workspace_id;
+
+	my %query;
+
+	$query{start}       = guess_datetime( $start ),
+	$query{end}         = guess_datetime( $end, $query{start} ),
+	$query{description} = $description;
+	$query{project}     = $ENV{CLOCKIFY_PROJECT_ID};
+
+	print "Proceed? ";
+	my $answer = <STDIN>;
+	exit unless $answer =~ /\Ay/i;
+
+	my $result = $user->add_time_entry( \%query );
+	if( $result->is_success ) {
+		say <<~"HERE";
+		Added entry @{[ $result->id ]}
+			@{[ $result->start_date ]}
+			@{[ $result->end_date ]}
+		HERE
+		}
+	else {
+		say <<~"HERE";
+		Error code @{[ $result->code ]}
+		@{[ $result->message ]}
+		HERE
+		}
+	}
+
+sub guess_datetime ( $arg = '', $start_date = '' ) {
+	$start_date =~ s/T.*//;
+
+	$arg =~ s/://g;
+	$arg =~ s|/|-|g;
+
+	my $rc = $arg =~ m/
+		\A
+		(?:
+			(?<date>(?:\d\d?-)?\d\d)
+			T
+		)?
+		(?<time>
+		\d\d(?:\d\d)?
+		)
+		\z
+		/x;
+
+	my $date = $rc ? $+{date} : undef;
+	$date //= $start_date;
+
+	my $time = $+{time};
+
+	my $dt = join 'T', check_date( $date ), check_time( $time );
+
+	my $t = Clockify::DateTime->parse_local( $dt );
+	Clockify::DateTime->format( $t );
+	}
+
+sub check_time ( $time ) {
+	$time .= '00' if length $time == 2;
+	substr $time, 2, 0, ':';
+	$time;
+	}
+
+sub check_date ( $date ) {
+	return today() unless length $date;
+
+	return this_day( $date ) if $date =~ m/\A(\d\d)\z/;
+
+	my( $year, $month, $day );
+	if( $date =~ m/\A\d+-\d\d\z/ ) {
+		my $this_year  = (localtime)[5] + 1900;
+		my $this_month = (localtime)[4] + 1;
+		( $month, $day ) = split /-/, $date;
+
+		$year = $this_year;
+		$year -= 1 if $month > $this_month;
+		}
+	elsif( $date =~ m/\A\d+-\d+-\d+/ ) {
+		( $year, $month, $day ) = split /-/, $date;
+		}
+
+	date_format( $year, $month, $day )
+	}
+
+sub now () {
+	datetime_format(
+		split /-/, today(),
+		(localtime)[2,1],
+		);
+	}
+sub today () { this_day( (localtime)[3] ) }
+
+sub this_day ( $day ) {
+	my $month = (localtime)[4] + 1;
+	my $year  = (localtime)[5] + 1900;
+
+	$month -= 1 if $day > (localtime)[3];
+	if( $month == 0 ) {
+		$month = 12;
+		$year -=  1;
+		};
+
+	date_format( $year, $month, $day );
+	}
+
+sub date_format( $year, $month, $day ) {
+	sprintf "%4d-%02d-%02d", $year, $month, $day;
+	}
+
+sub datetime_format( $year, $month, $day, $hour, $minute ) {
+	sprintf "%4d-%02d-%02dT%02d:%02d",
+		$year, $month, $day, $hour, $minute;
+	}

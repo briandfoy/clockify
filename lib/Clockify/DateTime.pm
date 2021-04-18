@@ -10,6 +10,7 @@ our $VERSION = '0.001_01';
 use warnings::register;
 
 use Carp qw(croak);
+use POSIX;
 use Time::Piece qw();
 
 =encoding utf8
@@ -52,18 +53,10 @@ sub parse ( $class, $datetime ) {
 	Time::Piece->strptime( $datetime =~ s/Z\z/ +0000/r, $format );
 	}
 
-sub parse_local ( $class, $datetime, $tz = $ENV{TZ} ) {
+sub parse_local ( $class, $datetime ) {
 	state $format = '%Y-%m-%dT%T %z';
 
-	local $ENV{TZ} = $tz;
-
-	if( ! defined $tz ) {
-		warnings::warnif( 'TZ is not set!' );
-		}
-	elsif( $tz =~ m|\A \w+ / \w+ \z| ) {
-		warnings::warnif( 'TZ is not in the form area/city!' );
-		}
-
+	POSIX::tzset();
 	my $t = Time::Piece->new->strptime( $datetime =~ s/Z\z/ +0000/r, $format );
 	$t += $t->tzoffset;
 	}

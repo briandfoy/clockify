@@ -29,6 +29,16 @@ Clockify::Duration - handle Clockify durations
 
 Returns true if the class can respond to the METHOD.
 
+=item from( STRING )
+
+=cut
+
+sub from ( $class, $string ) {
+	my $d = $class->parse( $string );
+
+	$class->new( $d->@{ qw(hours minutes seconds) } );
+	}
+
 =item new( HOURS, MINUTES, SECONDS )
 
 Create a new duration object. The HOURS, MINUTES, and SECONDS can be
@@ -37,7 +47,7 @@ are whole numbers.
 
 =cut
 
-sub new( $class, $hours, $minutes = 0, $seconds = 0 ) {
+sub new ( $class, $hours = 0, $minutes = 0, $seconds = 0 ) {
 	my $elapsed_seconds = $hours * 3600 + $minutes * 60 + $seconds;
 
 	$hours   = floor( $elapsed_seconds / 3600 );
@@ -56,6 +66,8 @@ sub new( $class, $hours, $minutes = 0, $seconds = 0 ) {
 
 	$h->{elapsed_seconds} = (60*60*$h->hours + 60*$h->minutes + $h->seconds);
 	$h->{elapsed_hours} = sprintf "%.2f", $h->elapsed_seconds / 3600;
+
+	$h->{duration} = $h->format;
 
 	$h;
 	}
@@ -78,7 +90,7 @@ sub parse ( $class, $string ) {
 		/x;
 
 	if( $string =~ $pattern ) {
-		my $h = $class->new( @+{ qw(hours minutes seconds) } );
+		my $h = $class->new( map { $_ // 0 } @+{ qw(hours minutes seconds) } );
 		$h->{duration} = $string;
 		return $h;
 		}
@@ -87,7 +99,6 @@ sub parse ( $class, $string ) {
 		return;
 		}
 	}
-
 
 =back
 
