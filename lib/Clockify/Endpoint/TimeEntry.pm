@@ -9,6 +9,7 @@ use Carp qw(carp croak);
 
 our $VERSION = '0.001_01';
 
+use Clockify::DateTime;
 use Clockify::UserAgent;
 use Clockify::Util;
 
@@ -130,15 +131,20 @@ sub duration ( $self ) {
 	}
 
 sub start_date {
-	state $rc = require Clockify::DateTime;
-	Clockify::DateTime->parse( $_[0]->_json->{timeInterval}{start} );
+	parse_datetime( $_[0]->_json->{timeInterval}{start} );
+	}
+
+sub start_date_local {
+	parse_datetime_local( $_[0]->_json->{timeInterval}{start} );
 	}
 
 sub end_date {
-	state $rc = require Clockify::DateTime;
-	Clockify::DateTime->parse( $_[0]->_json->{timeInterval}{end} );
+	parse_datetime( $_[0]->_json->{timeInterval}{end} );
 	}
 
+sub end_date_local {
+	parse_datetime_local( $_[0]->_json->{timeInterval}{end} );
+	}
 
 
 sub time_entry ( $self ) {

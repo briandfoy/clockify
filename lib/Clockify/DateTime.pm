@@ -21,6 +21,7 @@ our @EXPORT = qw(
 	parse_datetime parse_datetime_local
 	round_up_15
 	this_day today
+	week_start
 	);
 
 our %EXPORT_TAGS = (
@@ -159,6 +160,18 @@ sub guess_time ( $time ) {
 	$time;
 	}
 
+=item month_start
+
+Return the datetime for the local start of the month, in UTC.
+
+=cut
+
+sub month_start () {
+	my $today = Time::Piece->new;
+
+	format_datetime( $today->truncate( to => 'month' ) + $today->tzoffset );
+	}
+
 =item now
 
 The current date time.
@@ -209,7 +222,7 @@ sub parse_datetime_local ( $datetime ) {
 
 	POSIX::tzset();
 	my $t = Time::Piece->new->strptime( $datetime =~ s/Z\z/ +0000/r, $format );
-	$t += $t->tzoffset;
+	$t -= $t->tzoffset;
 	}
 
 =item round_up_15( TIMESTR )
@@ -260,6 +273,22 @@ sub this_day ( $day ) {
 =cut
 
 sub today () { this_day( (localtime)[3] ) }
+
+=item week_start
+
+Return the datetime for the local start of the week, in UTC.
+
+=cut
+
+sub week_start () {
+	my $today = Time::Piece->new;
+
+	unless( $today->wday == 0 ) {
+		$today = $today - ( $today->wday - 1 ) * 86400;
+		}
+
+	format_datetime($today->truncate( to => 'day' ) + $today->tzoffset );
+	}
 
 
 =back

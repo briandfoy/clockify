@@ -9,7 +9,10 @@ use Carp qw(carp croak);
 
 our $VERSION = '0.001_01';
 
+use Clockify::DateTime;
+use Clockify::Endpoint::TimeEntry;
 use Clockify::UserAgent;
+
 use Mojo::Util qw(dumper);
 
 =encoding utf8
@@ -94,17 +97,18 @@ sub is_success           { 1 }
 sub name                 { shift->_json->{name}  }
 
 sub time_entries ( $self, $workspace = undef ) {
-	state $rc = require Clockify::Endpoint::TimeEntry;
 	$workspace //= $self->active_workspace_id;
-	say STDERR "Workspace $workspace";
 	Clockify::Endpoint::TimeEntry->get( $workspace, $self );
 	}
 
 sub time_entries_between ( $self, $workspace = undef, $start_date = undef, $end_date = undef ) {
-	state $rc = require Clockify::Endpoint::TimeEntry;
 	$workspace //= $self->active_workspace_id;
-	say STDERR "Workspace $workspace";
-	Clockify::Endpoint::TimeEntry->get( $workspace, $self );
+	Clockify::Endpoint::TimeEntry->get( $workspace, $self, $start_date, $end_date );
+	}
+
+sub time_entries_this_week ( $self, $workspace = undef ) {
+	$workspace //= $self->active_workspace_id;
+	Clockify::Endpoint::TimeEntry->get( $workspace, $self, week_start() );
 	}
 
 sub workspaces ( $self ) {
@@ -129,8 +133,6 @@ Hash has keys for:
 =cut
 
 sub add_time_entry ( $self, $hash ) {
-	state $rc = require Clockify::Endpoint::TimeEntry;
-
 	$hash->{project}   //= $ENV{CLOCKIFY_PROJECT_ID};
 	$hash->{user}      //= $self->id;
 	$hash->{workspace} //= $self->active_workspace_id;
