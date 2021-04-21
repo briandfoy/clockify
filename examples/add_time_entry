@@ -72,12 +72,3 @@ sub run ( @args ) {
 	}
 
 
-
-sub date_format( $year, $month, $day ) {
-	sprintf "%4d-%02d-%02d", $year, $month, $day;
-	}
-
-sub datetime_format( $year, $month, $day, $hour, $minute ) {
-	sprintf "%4d-%02d-%02dT%02d:%02d",
-		$year, $month, $day, $hour, $minute;
-	}
