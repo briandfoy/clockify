@@ -27,9 +27,7 @@ Clockify::Endpoint::TimeEntry -
 
 =over 4
 
-=item add
-
-=back
+=item * add
 
 =item * add_time_entry
 
@@ -73,7 +71,7 @@ sub add ( $class, $hash  ) {
 	$result;
 	}
 
-=item get
+=item * get
 
 =cut
 
@@ -99,7 +97,7 @@ sub get ( $class, $workspace, $user, $start_date = undef, $end_date = undef ) {
 	\@entries;
 	}
 
-=item new
+=item * new
 
 =cut
 

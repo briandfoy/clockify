@@ -12,8 +12,9 @@ subtest setup => sub {
 
 subtest parse => sub {
 	my $datetime = '2021-03-23T13:07:19Z';
+	ok( defined &parse_datetime );
 
-	my $t = $class->parse( $datetime );
+	my $t = parse_datetime( $datetime );
 	is( $t->year, 2021, 'year is right' );
 	is( $t->mon,     3, 'month is right' );
 	is( $t->mday,   23, 'day is right' );
@@ -27,20 +28,25 @@ subtest parse => sub {
 
 subtest format => sub {
 	subtest parse => sub {
+		ok( defined &parse_datetime );
+		ok( defined &format_datetime );
 		local $ENV{TZ};
 		my $datetime = '2021-03-23T13:07:19Z';
 
-		my $t = $class->parse( $datetime );
-		my $round_trip = $class->format( $t );
+		my $t = parse_datetime( $datetime );
+		my $round_trip = format_datetime( $t );
 		is( $round_trip, $datetime, 'Round trip date is the same' );
 		};
 
 	subtest parse_local => sub {
+		ok( defined &parse_datetime_local );
+		ok( defined &format_datetime_local );
+
 		my $datetime = '2021-03-23T13:07:19Z';
 		local $ENV{TZ} = 'America/New_York';
 
-		my $t = $class->parse_local( $datetime );
-		is( $class->format_local( $t ), '2021-03-23T09:07:19 -0400' );
+		my $t = parse_datetime_local( $datetime );
+		is( format_datetime_local( $t ), '2021-03-23T09:07:19 -0400' );
 		};
 
 	};

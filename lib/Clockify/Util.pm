@@ -32,7 +32,7 @@ Clockify::Util - miscellaneous things
 
 =cut
 
-=item * id( OBJECT | STRING )
+=item * id_from( OBJECT | STRING )
 
 Given an object, return the result of its C<id> method, if it exists.
 Otherwise, it returns undef.

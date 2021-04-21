@@ -62,6 +62,10 @@ Return the base url for the Clockify ReportAPI
 
 sub reports_base_api { Mojo::URL->new( 'https://reports.api.clockify.me/v1/' ) }
 
+=item * request( METHOD, ENDPOINT, ENDPOINT_ARGS, UA_ARGS )
+
+=cut
+
 sub request ( $method, $endpoint, $endpoint_args = [], @args ) {
 	my $path = sprintf $endpoint =~ s/\{.*?\}/%s/gr,
 		map { id_from($_) } $endpoint_args->@*;
@@ -79,7 +83,8 @@ sub request ( $method, $endpoint, $endpoint_args = [], @args ) {
 
 =item * ua
 
-Return the web user agent
+Return the web user agent. This has already been setup to include the
+API Key in the response.
 
 =cut
 

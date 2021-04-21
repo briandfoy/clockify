@@ -48,6 +48,7 @@ sub run ( @args ) {
 	$query{description} = $description;
 	$query{project}     = $ENV{CLOCKIFY_PROJECT_ID};
 
+	say dumper( \%query );
 	print "Proceed? ";
 	my $answer = <STDIN>;
 	exit unless $answer =~ /\Ay/i;
@@ -58,6 +59,8 @@ sub run ( @args ) {
 		Added entry @{[ $result->id ]}
 			@{[ $result->start_date ]}
 			@{[ $result->end_date ]}
+
+			@{ [ $result->duration->{elapsed_hours} ] } hours
 		HERE
 		}
 	else {
@@ -68,82 +71,7 @@ sub run ( @args ) {
 		}
 	}
 
-sub guess_datetime ( $arg = '', $start_date = '' ) {
-	$start_date =~ s/T.*//;
 
-	$arg =~ s/://g;
-	$arg =~ s|/|-|g;
-
-	my $rc = $arg =~ m/
-		\A
-		(?:
-			(?<date>(?:\d\d?-)?\d\d)
-			T
-		)?
-		(?<time>
-		\d\d(?:\d\d)?
-		)
-		\z
-		/x;
-
-	my $date = $rc ? $+{date} : undef;
-	$date //= $start_date;
-
-	my $time = $+{time};
-
-	my $dt = join 'T', check_date( $date ), check_time( $time );
-
-	my $t = Clockify::DateTime->parse_local( $dt );
-	Clockify::DateTime->format( $t );
-	}
-
-sub check_time ( $time ) {
-	$time .= '00' if length $time == 2;
-	substr $time, 2, 0, ':';
-	$time;
-	}
-
-sub check_date ( $date ) {
-	return today() unless length $date;
-
-	return this_day( $date ) if $date =~ m/\A(\d\d)\z/;
-
-	my( $year, $month, $day );
-	if( $date =~ m/\A\d+-\d\d\z/ ) {
-		my $this_year  = (localtime)[5] + 1900;
-		my $this_month = (localtime)[4] + 1;
-		( $month, $day ) = split /-/, $date;
-
-		$year = $this_year;
-		$year -= 1 if $month > $this_month;
-		}
-	elsif( $date =~ m/\A\d+-\d+-\d+/ ) {
-		( $year, $month, $day ) = split /-/, $date;
-		}
-
-	date_format( $year, $month, $day )
-	}
-
-sub now () {
-	datetime_format(
-		split /-/, today(),
-		(localtime)[2,1],
-		);
-	}
-sub today () { this_day( (localtime)[3] ) }
-
-sub this_day ( $day ) {
-	my $month = (localtime)[4] + 1;
-	my $year  = (localtime)[5] + 1900;
-
-	$month -= 1 if $day > (localtime)[3];
-	if( $month == 0 ) {
-		$month = 12;
-		$year -=  1;
-		};
-
-	date_format( $year, $month, $day );
-	}
 
 sub date_format( $year, $month, $day ) {
 	sprintf "%4d-%02d-%02d", $year, $month, $day;
