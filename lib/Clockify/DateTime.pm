@@ -80,7 +80,7 @@ Given a string, guess the date by adding the month or year.
 sub guess_date ( $date ) {
 	return today() unless length $date;
 
-	return this_day( $date ) if $date =~ m/\A(\d\d)\z/;
+	return this_day( $date ) if $date =~ m/\A(\d\d?)\z/;
 
 	my( $year, $month, $day );
 	if( $date =~ m/\A\d+-\d\d\z/ ) {
@@ -113,7 +113,7 @@ sub guess_datetime ( $arg = '', $start_date = '' ) {
 	my $rc = $arg =~ m/
 		\A
 		(?:
-			(?<date>(?:\d\d?-)?\d\d)
+			(?<date>(?:\d\d?-)?\d\d?)
 			T
 		)?
 		(?<time>
@@ -122,10 +122,22 @@ sub guess_datetime ( $arg = '', $start_date = '' ) {
 		\z
 		/x;
 
+	my $time = $+{time};
+
 	my $date = $rc ? $+{date} : undef;
 	$date //= $start_date;
-
-	my $time = $+{time};
+	unless( $date ) {
+		my $time_now = join '', map { Time::Piece->new->$_() } qw(hour min);
+		say "Date is undefined. Time is $time";
+		if( $time > $time_now + 15) {
+			say "Choosing yesterday";
+			$date = yesterday();
+			}
+		else {
+			say "Choosing today";
+			$date = today();
+			}
+		}
 
 	my $dt = join 'T', guess_date( $date ), guess_time( $time );
 
@@ -168,7 +180,6 @@ Return the datetime for the local start of the month, in UTC.
 
 sub month_start () {
 	my $today = Time::Piece->new;
-
 	format_datetime( $today->truncate( to => 'month' ) + $today->tzoffset );
 	}
 
@@ -270,9 +281,11 @@ sub this_day ( $day ) {
 
 =item today
 
+Today's date, in YYYY-MM-DD
+
 =cut
 
-sub today () { this_day( (localtime)[3] ) }
+sub today () { Time::Piece->new->strftime( '%Y-%m-%d' ) }
 
 =item week_start
 
@@ -290,6 +303,13 @@ sub week_start () {
 	format_datetime($today->truncate( to => 'day' ) + $today->tzoffset );
 	}
 
+=item yesterday
+
+Yesterday's date, in YYYY-MM-DD
+
+=cut
+
+sub yesterday () { (Time::Piece->new - 86_400)->strftime( '%Y-%m-%d' ) }
 
 =back
 
