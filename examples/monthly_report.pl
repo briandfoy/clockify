@@ -29,6 +29,7 @@ foreach my $entry ( reverse $time_entries->@* ) {
 	state $count          = 0;
 	state $previous_start = undef;
 	state $period_total   = 0;
+	state %project_totals = ();
 
 	$count++;
 
@@ -40,7 +41,16 @@ foreach my $entry ( reverse $time_entries->@* ) {
 	my $output;
 
 	my sub summary {
-		$output .= sprintf "%20s : %5.2f\n\n", 'Total', $period_total;
+		say '-' x 28;
+		foreach my $project ( sort keys %project_totals ) {
+			$output	.= sprintf "    %16s : %5.2f\n", $project, $project_totals{$project};
+			}
+
+		$output .= sprintf "%20s : %5.2f\n", 'Total', $period_total;
+
+		$output .= "\n";
+
+		%project_totals = ();
 		$period_total = 0;
 		}
 
@@ -56,6 +66,8 @@ foreach my $entry ( reverse $time_entries->@* ) {
 
 	$previous_start = $start;
 	$period_total += $duration->{elapsed_hours};
+
+	$project_totals{$entry->project->name} += $duration->{elapsed_hours};
 
 	print $output;
 	}

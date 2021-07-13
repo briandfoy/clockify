@@ -10,6 +10,7 @@ use Carp qw(carp croak);
 our $VERSION = '0.001_01';
 
 use Clockify::DateTime;
+use Clockify::Endpoint::TimeEntries;
 use Clockify::Endpoint::TimeEntry;
 use Clockify::UserAgent;
 
@@ -28,8 +29,8 @@ Clockify::Endpoint::User -
 
 =cut
 
-sub new ( $class, $json ) {
-	bless { _json => $json, _extras => {} }, $class;
+sub new ( $class, $endpoint_args, $json ) {
+	bless { _endpoint_args => $endpoint_args, _json => $json, _extras => {} }, $class;
 	}
 
 sub current ( $class ) { _fetch() }
@@ -98,7 +99,7 @@ sub name                 { shift->_json->{name}  }
 
 sub time_entries ( $self, $workspace = undef ) {
 	$workspace //= $self->active_workspace_id;
-	Clockify::Endpoint::TimeEntry->get( $workspace, $self );
+	Clockify::Endpoint::TimeEntries->get( $workspace, $self );
 	}
 
 sub time_entries_between ( $self, $workspace = undef, $start_date = undef, $end_date = undef ) {

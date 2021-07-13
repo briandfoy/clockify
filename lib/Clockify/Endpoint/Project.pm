@@ -28,19 +28,22 @@ Clockify::Endpoint::Project - The basic Project object
 
 sub _extras { shift->{_extras} }
 
-sub _json   { shift->{_json}  }
+sub _json   { $_[0]->{_json}  }
 
 =item * all
 
 =cut
 
-sub all ( $class, $workspace ) {
+use Mojo::Util qw(dumper);
+
+sub all ( $class, $workspace_id ) {
 	state $method   = 'get';
 	state $endpoint = '/workspaces/{workspaceId}/projects';
 
-	my $json = request( $method, $endpoint, [ $workspace ] );
+	my $endpoint_args = [ $workspace_id ];
+	my $projects      = request( $method, $endpoint, $endpoint_args );
 
-	my @projects = map { $class->new( $_ ) } $json->@*;
+	my @projects = map { $class->new( $endpoint_args, $_ ) } $projects->{_json}->@*;
 	\@projects;
 	}
 
@@ -48,21 +51,27 @@ sub all ( $class, $workspace ) {
 
 =cut
 
-sub get ( $class, $workspace, $project ) {
+sub get ( $class, $workspace_id, $project_id ) {
 	state $method   = 'get';
 	state $endpoint = '/workspaces/{workspaceId}/projects/{projectId}';
+	state $memo     = ();
 
-	my $json = request( $method, $endpoint, [ $workspace, $project ] );
+	if( eval { exists $memo->{$workspace_id}{$project_id} } ) {
+		return $memo->{$workspace_id}{$project_id};
+		}
 
-	$class->new( $json )
+	my $endpoint_args = [ $workspace_id, $project_id ];
+	my $json = request( $method, $endpoint, $endpoint_args );
+
+	$memo->{$workspace_id}{$project_id} = $json;
 	}
 
 =item * new
 
 =cut
 
-sub new ( $class, $json ) {
-	bless { _json => $json, _extras => {} }, $class;
+sub new ( $class, $endpoint_args, $json ) {
+	bless { _endpoint_args => $endpoint_args, _json => $json, _extras => {} }, $class;
 	}
 
 =back

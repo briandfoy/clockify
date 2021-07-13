@@ -5,7 +5,7 @@ package Clockify::Endpoint::TimeEntry;
 use warnings;
 use experimental qw(signatures);
 
-use Carp qw(carp croak);
+use Carp qw(carp croak confess);
 
 our $VERSION = '0.001_01';
 
@@ -76,7 +76,7 @@ sub add ( $class, $hash  ) {
 
 =cut
 
-sub get ( $class, $workspace, $user, $start_date = undef, $end_date = undef ) {
+sub get ( $class, $workspace_id, $user_id, $start_date = undef, $end_date = undef ) {
 	state $method   = 'get';
 	state $endpoint = '/workspaces/{workspaceId}/user/{userId}/time-entries';
 
@@ -93,8 +93,13 @@ sub get ( $class, $workspace, $user, $start_date = undef, $end_date = undef ) {
 
 	@args = keys %query ? ( form => \%query ) : ();
 
-	my $set = request( $method, $endpoint, [ $workspace, $user ], @args );
-	my @entries = map { $class->new( $_ ) } $set->_json->@*;
+	my $endpoint_args = [ $workspace_id, $user_id ];
+	my $set = request( $method, $endpoint, $endpoint_args, @args );
+
+	my @entries =
+		map { $class->new( $endpoint_args, $_ ) }
+		$set->_json->@*;
+
 	\@entries;
 	}
 
@@ -102,8 +107,21 @@ sub get ( $class, $workspace, $user, $start_date = undef, $end_date = undef ) {
 
 =cut
 
-sub new ( $class, $json ) {
-	bless { _json => $json, _extras => {} }, $class;
+sub new ( $class, $endpoint_args, $json ) {
+	my( $workspace_id, $user_id ) = $endpoint_args->@*;
+
+	my $project = Clockify::Endpoint::Project->get( $workspace_id, $json->{projectId} );
+
+	my $self = bless {
+		_endpoint_args => $endpoint_args,
+		_json          => $json,
+		_extras        => {},
+		_workspace     => $workspace_id,
+		_user          => $user_id,
+		_project       => $project,
+		}, $class;
+
+	$self;
 	}
 
 =back
@@ -146,11 +164,11 @@ sub end_date_local {
 	parse_datetime_local( $_[0]->_json->{timeInterval}{end} );
 	}
 
-
 sub time_entry ( $self ) {
 
 	}
 
+sub project { $_[0]->{_project} }
 
 
 sub stop_timer ( $self, $workspace, $user ) {

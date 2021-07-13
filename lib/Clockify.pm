@@ -8,6 +8,7 @@ use experimental qw(signatures);
 
 our $VERSION = '0.001_01';
 
+use Clockify::Endpoint::Project;
 use Clockify::Endpoint::User;
 use Clockify::Endpoint::Workspace;
 
@@ -29,20 +30,43 @@ Clockify - interact with the Clockify.me API
 
 =cut
 
-sub new {
-
+sub new ( $class, $workspace_id = undef ) {
+	my $self = bless {}, $class;
+	$self->init(
+		workspace_id => $workspace_id,
+		);
+	$self;
 	}
 
-=item init
+=item init( HASH )
+
+Hash:
+
+	user_id
+	workspace_id
 
 =cut
 
-sub init {
-
+sub init ( $self, %args ) {
+	$self->{user} = Clockify::Endpoint::User->current;
+	$self->{workspace_id} = $args{workspace_id} // $self->{user}->active_workspace_id;
 	}
 
+=item user
 
+Return the User object.
 
+=cut
+
+sub user ( $self ) { $self->{user} }
+
+=item workspace_id
+
+Return the Workspace ID as a string.
+
+=cut
+
+sub workspace_id ( $self ) { $self->{workspace_id} }
 
 =back
 
@@ -106,6 +130,8 @@ sub stop_timer { paid_feature() }
 
 =item * current_user()
 
+Get the current user from the API.
+
 =cut
 
 sub current_user { Clockify::Endpoint::User->current }
@@ -155,13 +181,63 @@ sub remove_user_from_workspace {
 
 =over 4
 
-=item * all_projects
+=item * all_projects( [ WORKSPACE_ID ] )
 
 =cut
 
-sub all_projects ( $class, $workspace ) {
-	state $rc = require Clockify::Endpoint::Project;
-	Clockify::Endpoint::Project->all( $workspace );
+sub all_projects ( $self, $workspace = undef  ) {
+	Clockify::Endpoint::Project->all( $workspace // $self->user->active_workspace_id );
+	}
+
+=item * get_project_id
+
+=cut
+
+sub get_project_id ( $self ) {
+	if( not defined $ENV{CLOCKIFY_PROJECT} and defined $ENV{CLOCKIFY_PROJECT_ID} ) {
+		warn "CLOCKIFY_PROJECT_ID is deprecated. Use CLOCKIFY_PROJECT instead. Converting that for you.\n";
+		$ENV{CLOCKIFY_PROJECT} = delete $ENV{CLOCKIFY_PROJECT_ID};
+		}
+
+	say "CLOCKIFY_PROJECT <$ENV{CLOCKIFY_PROJECT}>";
+	return unless length $ENV{CLOCKIFY_PROJECT};
+
+	my $name = $ENV{CLOCKIFY_PROJECT};
+
+	return do {
+		if( $name =~ m/\A[a-f0-9]{24}\z/ ) { $name }
+		else { $self->project_id_from_name( $name ) }
+		};
+	}
+
+=item * project_id_from_name( NAME )
+
+=cut
+
+sub project_id_from_name ( $self, $name ) {
+	$self->project_name_hash->{$name};
+	}
+
+=item * id_hash
+
+=item * name_hash
+
+=cut
+
+sub project_id_hash ( $self, $workspace = undef ) {
+	state %h;
+	return if keys %h;
+
+	%h = map {  $_->id, $_->name }
+		Clockify::Endpoint::Project
+			->all( $workspace // $self->user->active_workspace_id )
+			->@*;
+	\%h;
+	}
+
+sub project_name_hash ( $self ) {
+	state %h = reverse $self->project_id_hash->%*;
+	\%h;
 	}
 
 =back
@@ -174,7 +250,7 @@ sub all_projects ( $class, $workspace ) {
 
 =cut
 
-sub current_user_workspaces {
+sub current_user_workspaces ( $class ) {
 	# GET /workspaces
 	Clockify::Endpoint::Workspace->for_current_user;
 	}

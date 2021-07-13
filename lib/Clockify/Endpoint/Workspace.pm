@@ -25,8 +25,22 @@ Clockify::Endpoint::Workspace -
 
 =cut
 
-sub new ( $class, $json ) {
-	bless { _json => $json, _extras => {} }, $class;
+sub by_id ( $class, $workspace_id  ) {
+	my $workspace = grep { $_->id eq $workspace_id } $class->for_current_user;
+
+	unless( defined $workspace ) {
+		carp "No workspace with ID <$workspace_id>";
+		}
+
+	return $workspace;
+	}
+
+sub new ( $class, $endpoint_args, $json ) {
+	bless {
+		_endpoint_args => $endpoint_args,
+		_json          => $json,
+		_extras        => {},
+		}, $class;
 	}
 
 sub _extras { shift->{_extras} }
@@ -41,7 +55,7 @@ sub for_current_user ( $class ) {
 	state $endpoint = '/workspaces';
 
 	my $set = request( $method, $endpoint );
-	my @workspaces = map { $class->new( $_ ) } $set->_json->@*;
+	my @workspaces = map { $class->new( [], $_ ) } $set->_json->@*;
 	}
 
 sub hourly_rate { $_[0]->_json->{hourlyRate}{amount} / 100 }

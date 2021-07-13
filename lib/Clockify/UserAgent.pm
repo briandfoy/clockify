@@ -71,6 +71,7 @@ sub request ( $method, $endpoint, $endpoint_args = [], @args ) {
 		map { id_from($_) } $endpoint_args->@*;
 
 	my $url = base_url()->clone->path( $path =~ s|\A/||r );
+say "Fetching $url";
 
 	my $tx = ua()->$method( $url, @args );
 
@@ -78,7 +79,7 @@ sub request ( $method, $endpoint, $endpoint_args = [], @args ) {
 
 	my $class = $tx->res->is_success ? (caller)[0] : 'Clockify::Error';
 
-	return $class->new( $json );
+	return $class->new( $endpoint_args, $json );
 	}
 
 =item * ua

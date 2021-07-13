@@ -8,11 +8,16 @@ use experimental qw(signatures);
 use Clockify;
 use Clockify::DateTime;
 
+use Getopt::Long;
+
 =head1 NAME
 
 add_time_entry - create Clockify time entries
 
 =head1 SYNOPSIS
+
+	# set the environment variable for the project:
+	% export CLOCKIFY_PROJECT=EXAMPLE123
 
 	# Add an entry for today with start and end times, and message
 	% add_time_entry 1230 1730 "This is what I did"
@@ -34,26 +39,37 @@ use Mojo::Util qw(dumper);
 
 run( @ARGV ) unless caller;
 
+sub process_args ( $args ) {
+	require Getopt::Long;
+
+	my $p = Getopt::Long::Parser->new;
+
+	#if( $p->getoptionsfromarray( $args, ...options descriptions...) ) {}
+	}
+
 sub run ( @args ) {
+	process_args( \@args );
+
 	my( $start, $end, $description ) = @args;
 
-	my $user = Clockify->current_user;
-	say "User ID: ", $user->id;
-	say "Active Workspace ID: ", $user->active_workspace_id;
+	my $clockify = Clockify->new;
+	say "Active Workspace ID: ", $clockify->user->active_workspace_id;
+	say "User ID: ", $clockify->user->id;
 
 	my %query;
 
 	$query{start}       = guess_datetime( $start ),
 	$query{end}         = guess_datetime( $end, $query{start} ),
 	$query{description} = $description;
-	$query{project}     = $ENV{CLOCKIFY_PROJECT_ID};
+	$query{project}     = $clockify->get_project_id;
 
-	say dumper( \%query );
+	show_query( \%query );
+
 	print "Proceed? ";
 	my $answer = <STDIN>;
 	exit unless $answer =~ /\Ay/i;
 
-	my $result = $user->add_time_entry( \%query );
+	my $result = $clockify->user->add_time_entry( \%query );
 	if( $result->is_success ) {
 		say <<~"HERE";
 		Added entry @{[ $result->id ]}
@@ -71,4 +87,14 @@ sub run ( @args ) {
 		}
 	}
 
+sub show_query ( $query ) {
+	printf <<~"HERE", $query->@{qw(start end project description)};
+	-------------------------
+	START:       %s
+	END:         %s
+	PROJECT:     %s
+	DESCRIPTION: %s
+	-------------------------
+	HERE
+	}
 
