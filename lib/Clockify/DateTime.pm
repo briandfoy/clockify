@@ -83,7 +83,7 @@ sub guess_date ( $date ) {
 	return this_day( $date ) if $date =~ m/\A(\d\d?)\z/;
 
 	my( $year, $month, $day );
-	if( $date =~ m/\A\d+-\d\d\z/ ) {
+	if( $date =~ m/\A\d+-\d\d?\z/ ) {
 		my $this_year  = (localtime)[5] + 1900;
 		my $this_month = (localtime)[4] + 1;
 		( $month, $day ) = split /-/, $date;
@@ -126,6 +126,7 @@ sub guess_datetime ( $arg = '', $start_date = '' ) {
 
 	my $date = $rc ? $+{date} : undef;
 	$date //= $start_date;
+
 	unless( $date ) {
 		my $time_now = join '', map { Time::Piece->new->$_() } qw(hour min);
 		say "Date is undefined. Time is $time";
