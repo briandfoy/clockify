@@ -15,7 +15,7 @@ use Clockify::UserAgent;
 
 =head1 NAME
 
-Clockify::Endpoint::Project -
+Clockify::Endpoint::Project - The basic Project object
 
 =head1 SYNOPSIS
 
