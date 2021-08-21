@@ -9,7 +9,7 @@ use Clockify;
 
 use Mojo::Util qw(dumper);
 
-my $pivot_day = 15;
+my $pivot_day = 14;
 
 my $user = Clockify->current_user;
 
