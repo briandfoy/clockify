@@ -1,13 +1,15 @@
 #!perl
-use v5.32;
+use v5.34;
 use warnings;
 
 use lib qw(lib);
 use experimental qw(signatures);
 
 use Clockify;
+use Clockify::Config;
 use Clockify::DateTime;
 
+use File::Spec::Functions;
 use Getopt::Long;
 
 =head1 NAME
@@ -40,21 +42,46 @@ use Mojo::Util qw(dumper);
 run( @ARGV ) unless caller;
 
 sub process_args ( $args ) {
+	say "process_args: args are <@$args>";
 	require Getopt::Long;
+	Getopt::Long->import( qw(:config no_ignore_case) );
 
-	my $p = Getopt::Long::Parser->new;
+	my %o = (
+		dry_run => ( $ENV{CLOCKIFY_DRY_RUN} // 0 ),
+		project => ( $ENV{CLOCKIFY_PROJECT} // '' ),
+		verbose => ( $ENV{CLOCKIFY_VERBOSE} // 0 ),
+		version => 0,
+		help    => 0,
+		);
 
-	#if( $p->getoptionsfromarray( $args, ...options descriptions...) ) {}
+	my %description = (
+		'dry_run|n'   => \$o{dry_run},
+		'help|h'      => \$o{help},
+		'project|p=s' => \$o{project},
+		'verbose|V'   => \$o{verbose},
+		'version|v'   => \$o{version},
+		);
+
+	Getopt::Long::GetOptionsFromArray( $args, %description );
+
+	return \%o;
 	}
 
+sub handle_version () { say "Version is 0.01"; exit }
+sub handle_help    () { say "Help is help";    exit }
+
 sub run ( @args ) {
-	process_args( \@args );
+	my $options = process_args( \@args );
+	my $config  = Clockify::Config->new( catfile( $ENV{HOME}, '.clockify' ) );
+	handle_version() if $options->{version};
+	handle_help()    if $options->{help};
 
 	my( $start, $end, $description ) = @args;
 
 	my $clockify = Clockify->new;
 	say "Active Workspace ID: ", $clockify->user->active_workspace_id;
-	say "User ID: ", $clockify->user->id;
+	say "User ID: ",             $clockify->user->id;
+	say "User name: ",           $clockify->user->name;
 
 	my %query;
 
@@ -62,9 +89,31 @@ sub run ( @args ) {
 	( $date, $time, $query{start} ) = guess_datetime( $start );
 	( undef, undef, $query{end}   ) = guess_datetime( $end, $date ),
 	$query{description} = $description;
-	$query{project}     = $clockify->get_project_id;
+
+	say "project is <$options->{project}>";
+	@query{qw(project_id project_name)} = do {
+		if( $options->{project} =~ /\A[a-f0-9]{24}\z/ ) {
+			my $name = $clockify->project_name_from_id( $options->{project} );
+			say "Found <$name> for <$options->{project}>";
+			( $options->{project}, $name );
+			}
+		elsif( length $options->{project} ) {
+			my @ids = grep { $_ } (
+				$config->project_id_from_label( $options->{project} ),
+				);
+
+			say "Found id <$ids[0]> for label <$options->{project}>";
+			( $ids[0], $options->{project} );
+			}
+		else {
+			say "Getting default project";
+			( $config->default_project_id, $config->default_project_name );
+			}
+		};
 
 	show_query( \%query );
+
+	exit if $options->{dry_run};
 
 	print "Proceed? ";
 	my $answer = <STDIN>;
@@ -89,11 +138,11 @@ sub run ( @args ) {
 	}
 
 sub show_query ( $query ) {
-	printf <<~"HERE", $query->@{qw(start end project description)};
+	printf <<~"HERE", $query->@{qw(start end project_id project_name description)};
 	-------------------------
 	START:       %s
 	END:         %s
-	PROJECT:     %s
+	PROJECT:     %s (%s)
 	DESCRIPTION: %s
 	-------------------------
 	HERE

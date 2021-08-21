@@ -218,9 +218,13 @@ sub project_id_from_name ( $self, $name ) {
 	$self->project_name_hash->{$name};
 	}
 
-=item * id_hash
+sub project_name_from_id ( $self, $id ) {
+	$self->project_id_hash->{$id};
+	}
 
-=item * name_hash
+=item * project_id_hash
+
+=item * project_name_hash
 
 =cut
 
