@@ -41,7 +41,7 @@ foreach my $entry ( reverse $time_entries->@* ) {
 	my $output;
 
 	my sub summary {
-		say '-' x 28;
+		$output .= '-' x 28 . "\n";
 		foreach my $project ( sort keys %project_totals ) {
 			$output	.= sprintf "    %16s : %5.2f\n", $project, $project_totals{$project};
 			}
