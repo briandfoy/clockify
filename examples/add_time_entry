@@ -58,8 +58,9 @@ sub run ( @args ) {
 
 	my %query;
 
-	$query{start}       = guess_datetime( $start ),
-	$query{end}         = guess_datetime( $end, $query{start} ),
+	my( $date, $time );
+	( $date, $time, $query{start} ) = guess_datetime( $start );
+	( undef, undef, $query{end}   ) = guess_datetime( $end, $date ),
 	$query{description} = $description;
 	$query{project}     = $clockify->get_project_id;
 

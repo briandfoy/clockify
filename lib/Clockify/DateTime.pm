@@ -139,9 +139,10 @@ sub guess_datetime ( $arg = '', $start_date = '' ) {
 			}
 		}
 
-	my $dt = join 'T', guess_date( $date ), guess_time( $time );
+	my $dt = join 'T', my $date_guess = guess_date( $date ), my $guess_time = guess_time( $time );
+	my $ztime = format_datetime( parse_datetime_local( $dt ) );
 
-	format_datetime( parse_datetime_local( $dt ) );
+	( $date_guess, $guess_time, $ztime );
 	}
 
 =item guess_time( TIMESTR )
