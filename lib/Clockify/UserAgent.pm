@@ -71,7 +71,6 @@ sub request ( $method, $endpoint, $endpoint_args = [], @args ) {
 		map { id_from($_) } $endpoint_args->@*;
 
 	my $url = base_url()->clone->path( $path =~ s|\A/||r );
-say "Fetching $url";
 
 	my $tx = ua()->$method( $url, @args );
 
