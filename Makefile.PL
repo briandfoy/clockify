@@ -67,6 +67,7 @@ my %WriteMakefile = (
 	'PREREQ_PM' => {
 		'Carp'        => '0',
 		'Time::Piece' => '0',
+		'TOML::XS'    => '0',
 		},
 
 	'META_MERGE' => {
