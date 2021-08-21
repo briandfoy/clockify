@@ -60,8 +60,8 @@ sub add ( $class, $hash  ) {
 
 	my %query = ();
 
-	$query{projectId} = id_from( $hash->{project} ) if exists $hash->{project};
-	$query{description} = $hash->{description};
+	$query{projectId} = id_from( delete $hash->{project_id} ) if exists $hash->{project_id};
+	$query{description} = delete $hash->{description};
 
 	@query{qw(start end)} = $hash->@{qw(start end)};
 
