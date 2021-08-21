@@ -124,8 +124,7 @@ sub guess_datetime ( $arg = '', $start_date = '' ) {
 
 	my $time = $+{time};
 
-	my $date = $rc ? $+{date} : undef;
-	$date //= $start_date;
+	my $date = length $+{date} ? $+{date} : $start_date;
 
 	unless( $date ) {
 		my $time_now = join '', map { Time::Piece->new->$_() } qw(hour min);
