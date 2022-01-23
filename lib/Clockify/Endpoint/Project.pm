@@ -41,9 +41,20 @@ sub all ( $class, $workspace_id ) {
 	state $endpoint = '/workspaces/{workspaceId}/projects';
 
 	my $endpoint_args = [ $workspace_id ];
-	my $projects      = request( $method, $endpoint, $endpoint_args );
 
-	my @projects = map { $class->new( $endpoint_args, $_ ) } $projects->{_json}->@*;
+	my @projects;
+	my $page = 1;
+	my $page_size = 5000; # max defined in API
+
+	while( 1 ) {
+		my $form = { page => $page, 'page-size' => $page_size };
+		my $projects = request( $method, $endpoint, $endpoint_args, form => $form );
+		push @projects, map { $class->new( $endpoint_args, $_ ) } $projects->{_json}->@*;
+		say "\t" . $projects->{_json}->@*;
+		last if $projects->{_json}->@* < $page_size;
+		$page++;
+		}
+
 	\@projects;
 	}
 
