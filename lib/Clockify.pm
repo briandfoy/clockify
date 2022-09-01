@@ -185,8 +185,24 @@ sub remove_user_from_workspace {
 
 =cut
 
-sub all_projects ( $self, $workspace = undef  ) {
-	Clockify::Endpoint::Project->all( $workspace // $self->user->active_workspace_id );
+sub all_projects ( $self, $workspace_id = undef  ) {
+	Clockify::Endpoint::Project->all( $workspace_id // $self->user->active_workspace_id );
+	}
+
+=item * get_project( WORKSPACE_ID, PROJECT_ID )
+
+=cut
+
+sub get_project ( $self, $workspace_id, $project_id  ) {
+	Clockify::Endpoint::Project->get( $workspace_id // $self->user->active_workspace_id, $project_id );
+	}
+
+=item * get_project( WORKSPACE_ID, PROJECT_ID )
+
+=cut
+
+sub get_project_tasks ( $self, $workspace_id, $project_id  ) {
+	Clockify::Endpoint::Task->get( $workspace_id // $self->user->active_workspace_id, $project_id );
 	}
 
 =item * get_project_id

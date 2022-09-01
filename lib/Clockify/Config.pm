@@ -62,4 +62,8 @@ sub project_name_from_label ( $self, $label ) {
 	$self->project_from_label( $label )->{name};
 	}
 
+sub task_id_from_label ( $self, $label ) {
+	$self->project_from_label( $label )->{task};
+	}
+
 1;

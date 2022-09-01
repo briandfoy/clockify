@@ -50,7 +50,6 @@ sub all ( $class, $workspace_id ) {
 		my $form = { page => $page, 'page-size' => $page_size };
 		my $projects = request( $method, $endpoint, $endpoint_args, form => $form );
 		push @projects, map { $class->new( $endpoint_args, $_ ) } $projects->{_json}->@*;
-		say "\t" . $projects->{_json}->@*;
 		last if $projects->{_json}->@* < $page_size;
 		$page++;
 		}
@@ -67,14 +66,9 @@ sub get ( $class, $workspace_id, $project_id ) {
 	state $endpoint = '/workspaces/{workspaceId}/projects/{projectId}';
 	state $memo     = ();
 
-	if( eval { exists $memo->{$workspace_id}{$project_id} } ) {
-		return $memo->{$workspace_id}{$project_id};
-		}
-
+	my $form = {};
 	my $endpoint_args = [ $workspace_id, $project_id ];
-	my $json = request( $method, $endpoint, $endpoint_args );
-
-	$memo->{$workspace_id}{$project_id} = $json;
+	request( $method, $endpoint, $endpoint_args, form => $form );
 	}
 
 =item * new
@@ -104,6 +98,25 @@ sub id           { $_[0]->_json->{id}          }
 sub name         { $_[0]->_json->{name}        }
 
 sub workspace_id { $_[0]->_json->{workspaceId} }
+
+=item * tasks
+
+Return a list of Tasks objects for the project. If the project has no tags,
+this returns the empty list.
+
+=cut
+
+sub tasks ( $self ) {
+	state $rc = require Clockify::Endpoint::Task;
+	say "tasks: workspace_id <" . $self->workspace_id . ">";
+	say "tasks: id <" . $self->id . ">";
+	say "Tasks object: ", dumper( $self );
+
+	Clockify::Endpoint::Task->all(
+		$self->workspace_id,
+		$self->id,
+		);
+	}
 
 =back
 
