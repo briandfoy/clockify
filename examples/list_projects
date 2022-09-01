@@ -1,9 +1,9 @@
 #!perl
 use v5.32;
-use strict;
-
-use lib qw(lib);
 use experimental qw(signatures);
+
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
 
 use Clockify;
 
@@ -17,5 +17,6 @@ say "Active Workspace ID: ", $user->active_workspace_id;
 my $projects = Clockify->all_projects( $user->active_workspace_id );
 
 foreach my $project ( $projects->@* ) {
-	say join " ", $project->id, $project->name
+	say join " ", $project->id, $project->name;
+#	say dumper( $project->_json );
 	}
