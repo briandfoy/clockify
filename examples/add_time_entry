@@ -33,6 +33,9 @@ add_time_entry - create Clockify time entries
 	# If the month is later than this month, it's last year
 	% add_time_entry 12-20T1230 1730 "This is what I did"
 
+	# use -p to add a project
+	% add_time_entry -p admin 12-20T1230 1730 "This is what I did"
+
 =head1 DESCRIPTION
 
 =cut
@@ -91,23 +94,26 @@ sub run ( @args ) {
 	$query{description} = $description;
 
 	say "project is <$options->{project}>";
-	@query{qw(project_id project_name)} = do {
+	@query{qw(project_id project_name task_id)} = do {
 		if( $options->{project} =~ /\A[a-f0-9]{24}\z/ ) {
 			my $name = $clockify->project_name_from_id( $options->{project} );
 			say "Found <$name> for <$options->{project}>";
-			( $options->{project}, $name );
+			( $options->{project}, $name, undef );
 			}
 		elsif( length $options->{project} ) {
 			my @ids = grep { $_ } (
 				$config->project_id_from_label( $options->{project} ),
 				);
+			my @task_id = grep { $_ } (
+				$config->task_id_from_label( $options->{project} ),
+				);
 
 			say "Found id <$ids[0]> for label <$options->{project}>";
-			( $ids[0], $options->{project} );
+			( $ids[0], $options->{project}, $task_id[0] );
 			}
 		else {
 			say "Getting default project";
-			( $config->default_project_id, $config->default_project_name );
+			( $config->default_project_id, $config->default_project_name, undef );
 			}
 		};
 
