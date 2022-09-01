@@ -1,0 +1,22 @@
+#!perl
+use v5.32;
+use experimental qw(signatures);
+
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+
+use Clockify;
+
+use Mojo::Util qw(dumper);
+
+my $user = Clockify->current_user;
+
+say "User ID: ", $user->id;
+say "Active Workspace ID: ", $user->active_workspace_id;
+
+my $project = Clockify->get_project( $user->active_workspace_id, $ARGV[0] );
+say dumper( $project->_json );
+
+foreach my $task ( $project->tasks->@* ) {
+	say "\t", join " ", $task->id, $task->name;
+	}
