@@ -66,6 +66,7 @@ my %WriteMakefile = (
 
 	'PREREQ_PM' => {
 		'Carp'        => '0',
+		'Mojolicious' => '0',
 		'Time::Piece' => '0',
 		'TOML::XS'    => '0',
 		},
