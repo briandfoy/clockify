@@ -93,7 +93,7 @@ This source is in Github:
 
 =head1 AUTHOR
 
-brian d foy, C<< <brian d foy> >>
+brian d foy, C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT AND LICENSE
 
