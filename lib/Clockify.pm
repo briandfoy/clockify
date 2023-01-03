@@ -288,7 +288,7 @@ sub current_user_workspaces ( $class ) {
 
 This source is in Github:
 
-	http://github.com/briandfoy/Clockify
+	http://github.com/briandfoy/clockify
 
 =head1 AUTHOR
 

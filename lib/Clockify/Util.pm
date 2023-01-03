@@ -75,7 +75,7 @@ sub local_to_zulu ( $datetime ) {
 
 This source is in Github:
 
-	http://github.com/briandfoy/Clockify
+	http://github.com/briandfoy/clockify
 
 =head1 AUTHOR
 
