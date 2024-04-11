@@ -145,7 +145,7 @@ sub is_success { 1 }
 sub duration ( $self ) {
 	state $rc = require Clockify::Duration;
 	$self->_extras->{duration} =
-		Clockify::Duration->parse( $_[0]->_json->{timeInterval}{duration} );
+		Clockify::Duration->parse( $self->_json->{timeInterval}{duration} );
 	}
 
 sub start_date {
