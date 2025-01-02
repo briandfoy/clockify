@@ -56,18 +56,19 @@ foreach my $entry ( reverse $time_entries->@* ) {
 
 	summary() if ($count != 1) && ! $in_same_month;
 
-	$output .= sprintf "%3s %16s : %5.2f\n",
-		$start->wdayname,
-		format_date( $start ),
-		$duration->{elapsed_hours}
-		;
-
-	summary() if $count == $total;
-
 	$previous_start = $start;
 	$period_total += $duration->{elapsed_hours};
 
 	$project_totals{$entry->project->name} += $duration->{elapsed_hours};
+
+	$output .= sprintf "%3s %16s : %5.2f - %5.2f\n",
+		$start->wdayname,
+		format_date( $start ),
+		$duration->{elapsed_hours},
+	$project_totals{$entry->project->name}
+		;
+
+	summary() if $count == $total;
 
 	print $output;
 	}
@@ -76,15 +77,5 @@ sub format_date ( $t ) { $t->strftime( '%Y-%m-%d %H:%M' ) }
 
 sub in_same_month ( $previous, $now ) {
 	return 0 unless( defined $previous and defined $now );
-	my $cross_month = $now->mon == $previous->mon + 1;
-	my $same_month  = $now->mon == $previous->mon;
-
-	return
-		( $cross_month and $previous->mday > $pivot_day and $now->mday <= $pivot_day )
-			||
-		( $same_month and
-			( $now->mday > $pivot_day and $previous->mday > $pivot_day )
-				or
-			( $now->mday <= $pivot_day and $previous->mday <= $pivot_day )
-		);
+	return $now->mon == $previous->mon;
 	}
