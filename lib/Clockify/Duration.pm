@@ -8,7 +8,7 @@ use experimental qw(signatures);
 use Carp qw(carp croak);
 use POSIX qw(floor);
 
-our $VERSION = '0.001_01';
+our $VERSION = '0.001_02';
 
 =encoding utf8
 

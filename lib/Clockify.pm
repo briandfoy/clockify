@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use experimental qw(signatures);
 
-our $VERSION = '0.001_01';
+our $VERSION = '0.001_02';
 
 use Clockify::Endpoint::Project;
 use Clockify::Endpoint::User;

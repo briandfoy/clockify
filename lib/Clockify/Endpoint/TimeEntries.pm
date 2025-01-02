@@ -7,7 +7,7 @@ use experimental qw(signatures);
 
 use Carp qw(carp croak confess);
 
-our $VERSION = '0.001_01';
+our $VERSION = '0.001_02';
 
 use Clockify::DateTime;
 use Clockify::UserAgent;

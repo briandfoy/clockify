@@ -4,7 +4,7 @@ package Clockify::UserAgent;
 use warnings;
 use experimental qw(signatures);
 
-our $VERSION = '0.001_01';
+our $VERSION = '0.001_02';
 
 use Exporter qw(import);
 use Mojo::Util qw(dumper);

@@ -10,7 +10,7 @@ use Carp qw(carp croak);
 use Clockify::UserAgent;
 use Mojo::Util qw(dumper);
 
-our $VERSION = '0.001_01';
+our $VERSION = '0.001_02';
 
 =encoding utf8
 

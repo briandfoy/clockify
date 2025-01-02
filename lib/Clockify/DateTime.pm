@@ -5,7 +5,7 @@ package Clockify::DateTime;
 use warnings;
 use experimental qw(signatures);
 
-our $VERSION = '0.001_01';
+our $VERSION = '0.001_02';
 
 use warnings::register;
 
