@@ -2,6 +2,20 @@
 
 =encoding utf8
 
+=for HTML <a href="https://www.github.com/briandfoy/clockify/actions?query=workflow%3Amacos"><img src="https://www.github.com/briandfoy/clockify/workflows/macos/badge.svg"></a>
+
+=for HTML <a href="https://www.github.com/briandfoy/clockify/actions?query=workflow%3Aubuntu"><img src="https://www.github.com/briandfoy/clockify/workflows/ubuntu/badge.svg"></a>
+
+=for HTML <a href="https://www.github.com/briandfoy/clockify/actions?query=workflow%3Awindows"><img src="https://www.github.com/briandfoy/clockify/workflows/windows/badge.svg"></a>
+
+=for HTML <a href='https://ci.appveyor.com/project/briandfoy/clockify'><img src='https://ci.appveyor.com/api/projects/status/vp4gr6fbnrc5erov?svg=true'></a>
+
+=for HTML <a href='https://coveralls.io/github/briandfoy/clockify?branch=master'><img src='https://coveralls.io/repos/github/briandfoy/clockify/badge.svg?branch=master' alt='Coverage Status' /></a>
+
+=for HTML <a href="https://github.com/briandfoy/clockify/blob/master/LICENSE"><img src="https://img.shields.io/cpan/l/Clockify.svg" /></a>
+
+=for HTML <a href="https://metacpan.org/pod/Clockify"><img src="https://img.shields.io/cpan/v/Clockify.svg" /></A>
+
 =head1 The Clockify module
 
 This is the I<README> for the L<Clockify> Perl module.
