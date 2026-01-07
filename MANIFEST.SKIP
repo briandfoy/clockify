@@ -94,3 +94,5 @@ nytprof
 \.gitattributes\b
 hours\.txt
 pre-hours\.pl
+
+.downstream.json
