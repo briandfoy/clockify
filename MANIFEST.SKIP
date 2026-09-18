@@ -96,3 +96,6 @@ hours\.txt
 pre-hours\.pl
 
 .downstream.json
+
+.downstream.json
+cpan_tester_reports
